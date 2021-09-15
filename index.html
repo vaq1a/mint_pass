@@ -228,8 +228,10 @@
                         More details in official
                         <a href="#" class="mintPassSale__description-highlighting-link">Twitter</a> and
                         <a href="#" class="mintPassSale__description-highlighting-link">Discord.</a> <br>
-                        Mint Pass available: <br>
-                        between 900 and 998
+                        Mint Pass available:
+                    </p>
+                    <p class="remainsLabel">
+                        Install/connect your Metamask to know...
                     </p>
                     <button class="mintPassSale__button">
                         MINT
@@ -259,11 +261,97 @@
             </div>
             <div class="content__cell">
                 <div class="mintPassPicture">
-                    <img class="mintPassPicture__image" src="./img/mintpass.png" alt="Mint pass">
+                    <img class="mintPassPicture__image sendEthButton" src="./img/mintpass.png" alt="Mint pass">
                 </div>
             </div>
         </div>
     </div>
+    <script type='text/javascript'>
+        (function() {
+            const contractAddr = "0x26A65227Be0973f455945d7F89a7A539b059bF78";
+            const sendEthButton = document.querySelector('.sendEthButton');
+            const remainsLabel = document.querySelector('.remainsLabel');
+
+            sendEthButton.style.visibility = 'hidden';
+
+            if (!window.ethereum) {
+                alert('Please, install Metamask to mint tokens...');
+                
+                return;
+            }
+
+            sendEthButton.style.visibility = 'visible';
+            const ethereum = window.ethereum;
+            var accounts = [];
+
+            //Sending Ethereum to an address
+            sendEthButton.addEventListener('click', () => {
+                ethereum
+                    .request({
+                        method: 'eth_sendTransaction',
+                        params: [
+                            {
+                                from: accounts[0],
+                                to: contractAddr,
+                                value: '13FBE85EDC90000',
+                                data: '0x1249c58b',
+                                gas: '0x249F0',
+                            },
+                        ],
+                    })
+                    .then((txHash) => console.log(txHash))
+                    .catch((error) => console.error);
+            });
+
+            async function getAccount() {
+                accounts = await ethereum.request({method: 'eth_requestAccounts'});
+            }
+
+            function isTokenOwned(tokenId) {
+                return ethereum.request({
+                        method: 'eth_call',
+                        params: [
+                            {
+                                to: contractAddr,
+                                data: '0x6352211e0000000000000000000000000000000000000000000000000000000000000' + tokenId,
+                            }
+                        ]
+                    });
+            }
+
+            async function getTokenRemains() {
+                var remains = Array();
+
+                remains[2] = ['0C8', 'between 800 and 899'];
+                remains[3] = ['12C', 'between 700 and 799'];
+                remains[4] = ['190', 'between 600 and 699'];
+                remains[5] = ['1F4', 'between 500 and 599'];
+                remains[6] = ['258', 'between 400 and 499'];
+                remains[7] = ['2BC', 'between 300 and 399'];
+                remains[8] = ['320', 'between 200 and 299'];
+                remains[9] = ['384', 'between 100 and 199'];
+                remains[10] = ['385', 'less than 100'];
+                remains[11] = ['3B6', 'less than 50'];
+                remains[12] = ['3E7', 'LAST mintpass left'];
+
+                for (var key = 2; key < 13; key++) {
+                    
+                    try {
+                        await isTokenOwned(remains[key][0]);
+                    } catch (err) {
+                        return remains[key][1];
+                    }
+                }
+                
+                return 'No mintpass left';
+            }
+
+            getAccount();
+            getTokenRemains().then(function(data) {
+                remainsLabel.innerHTML = data;
+            });
+        })();
+    </script>
 </body>
 </html>
 
